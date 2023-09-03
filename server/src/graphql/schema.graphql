@@ -1,60 +1,60 @@
 type Query {
     games: [Game],
-    game(UID: ID!): Game,
+    game(_id: ID!): Game,
     reviews: [Review],
-    review(UID: ID!): Review,
+    review(_id: ID!): Review,
     authors: [Author],
-    author(UID: ID!): Author,
+    author(_id: ID!): Author,
 }
 
 type Mutation {
     createGame(input: CreateGameInput): Game
-    deleteGame(UID: ID!): Game,
+    deleteGame(_id: ID!): Game,
 
     createAuthor(input: CreateAuthorInput): Author
-    deleteAuthor(UID: ID!): Author
+    deleteAuthor(_id: ID!): Author
 
     createReview(input: CreateReviewInput): Review
-    deleteReview(UID: ID!): Review
+    deleteReview(_id: ID!): Review
 }
 
 """this is a static property comes from resolvers"""
 type Game {
-    UID: ID!,
+    _id: ID!,
     title: String,
     platform: [String],
     reviews: [Review!]
 }
 type Review {
-    UID: ID!,
+    _id: ID!,
     rating: Float,
     content: String,
     game: Game!,
     author: Author!,
 }
 type Author {
-    UID: ID!,
+    _id: ID!,
     name: String,
-    verified: Boolean
+    verified: Boolean,
     reviews: [Review!]
 }
 
 input CreateGameInput {
-    UID: ID!,
+    _id: ID!,
     title: String,
     platform: [String],
-    author: String!
+    authorId: String!
 }
 
 input CreateAuthorInput {
-    UID: ID!,
+    _id: ID!,
     name: String!
 }
 
 input CreateReviewInput {
-    UID: ID!,
+    _id: ID!,
     rating: Float!,
     content: String,
     game: String!,
-    author: String
+    author: String!
 }

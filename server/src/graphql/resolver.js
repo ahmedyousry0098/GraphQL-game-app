@@ -1,8 +1,6 @@
-import db from '../db/static.db.js'
 import { UserModel } from '../db/models/user.model.js'
 import { ReviewModel } from '../db/models/review.model.js'
 import { GameModel } from '../db/models/game.model.js'
-import {GraphQLError} from 'graphql'
 import {badUserInputError, internalServerError, notFoundError, validationError} from './customErrors.graphql.js'
 
 export const resolvers = {
@@ -17,13 +15,13 @@ export const resolvers = {
             }
             return games
         },
-        game: async (_, {UID}) => {
-            if (!UID) {
+        game: async (_, {_id}) => {
+            if (!_id) {
                 return validationError(`game id is required`)
             }
-            const game = await GameModel.findOne({UID})
+            const game = await GameModel.findOne({_id})
             if (!game) {
-                return notFoundError(`game with id ${UID} not found`)
+                return notFoundError(`game with id ${_id} not found`)
             }
             return game
         },
@@ -37,13 +35,13 @@ export const resolvers = {
             }
             return reviews
         },
-        review: async (_, {UID}) => {
-            if (!UID) {
+        review: async (_, {_id}) => {
+            if (!_id) {
                 return validationError(`review id is required`)
             }
-            const review = await ReviewModel.findOne({UID})
+            const review = await ReviewModel.findById(_id)
             if (!review) {
-                return notFoundError(`review with id ${UID} not found`)
+                return notFoundError(`review with id ${_id} not found`)
             }
             return review
         },
@@ -57,13 +55,13 @@ export const resolvers = {
             }
             return authors
         },
-        author: async (_, {UID}) => {
-            if (!UID) {
+        author: async (_, {_id}) => {
+            if (!_id) {
                 return validationError(`author id is required`)
             }
-            const author = await UserModel.findOne({UID})
+            const author = await UserModel.findById({_id})
             if (!author) {
-                return notFoundError(`author with id ${UID} not found`)
+                return notFoundError(`author with id ${_id} not found`)
             }
             return author
         }
@@ -79,8 +77,8 @@ export const resolvers = {
             if (!game) return internalServerError()
             return game
         },
-        deleteGame: async (_, {UID}) => {
-            const game = await GameModel.findOneAndDelete({UID}, {new: true})
+        deleteGame: async (_, {_id}) => {
+            const game = await GameModel.findByIdAndDelete(_id)
             if (!game) return notFoundError('game not found')
             return game
         },
@@ -89,8 +87,8 @@ export const resolvers = {
             if (!author) return internalServerError()
             return author
         },
-        deleteAuthor: async (_, {UID}) => {
-            const author = await UserModel.findOneAndDelete({UID}, {new: true})
+        deleteAuthor: async (_, {_id}) => {
+            const author = await UserModel.findOneAndDelete(_id)
             if (!author) return notFoundError('game not found')
             return author
         },
@@ -107,33 +105,35 @@ export const resolvers = {
             if (!review) return internalServerError()
             return review
         },
-        deleteReview: async (_, {UID}) => {
-            const game = await GameModel.findOneAndDelete({UID}, {new: true})
+        deleteReview: async (_, {_id}) => {
+            const game = await GameModel.findByIdAndDelete(_id)
             if (!game) return notFoundError('game not found')
             return game
         },
-
-
     },
 
     Game: {
         reviews: async (parent) => {
-            const reviews = await ReviewModel.find({})
+            const reviews = await ReviewModel.find({game: parent._id})
+            return reviews
         }
     },
 
     Review: {
-        game: (parent) => {
-            return db.games.find(game => game.id === parent.game_id)
+        game: async (parent) => {
+            const game = await GameModel.findByID({_id: parent.game})
+            return game
         },
-        author: (parent) => {
-            return db.authors.find(a => a.id === parent.author_id)
+        author: async (parent) => {
+            const author = await UserModel.findById({_id: parent.author})
+            return author
         }
     },
 
     Author: {
-        reviews: (parent) => {
-            return db.reviews.filter(rev => rev.id === parent.aut)
+        reviews: async (parent) => {
+            const reviews = await ReviewModel.find({user: parent._id})
+            return reviews
         }
     }
 }

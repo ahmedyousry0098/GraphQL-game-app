@@ -5,11 +5,11 @@ import {expressMiddleware as apolloMiddleware} from '@apollo/server/express4'
 import cors from 'cors'
 import { connectDB } from './src/db/connection.js'
 import { resolvers } from './src/graphql/resolver.js'
-import { config } from 'dotenv'
-config({path:"./config/.env"})
+import dotenv from 'dotenv'
+dotenv.config({path: "./config/.env"})
 
 const app = express()
-const PORT = 9000
+const PORT = process.env.PORT
 
 connectDB()
 
@@ -21,7 +21,11 @@ const server = new ApolloServer({
 })
 await server.start()
 
-app.use('/graphql', cors(), express.json(), apolloMiddleware(server))
+function getCtx({req}) {
+    return req.body
+}
+
+app.use('/graphql', cors(), express.json(), apolloMiddleware(server, {context: getCtx}))
 
 app.listen(PORT, () => {
     console.log(`App Listening On Port ${PORT}`);
